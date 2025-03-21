@@ -1,2 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&display=swap');
-body{font-family: "Funnel Display", serif;scroll-behavior: smooth;}
+body{font-family: "Funnel Display", serif;scroll-behavior: smooth;padding: 0px;margin: 0px;height: 100%;}
+@media (prefers-color-scheme: dark) {
+    :root {
+      --primary-color: #ffff00;
+      --secondary-color: #f6b162;
+      --accent-color: #cd7866;
+      --background-color: #121212;
+      --background-color-light: #212121;
+      --background-color-lighter: #383838;
+      --text-color: #ffffff;
+      --text-color-blue:#00bcd4;
+      --border-color: #686868;
+    }
+  }
+*{margin: 0;padding: 0;box-sizing: border-box;}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

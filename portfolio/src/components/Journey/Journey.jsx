@@ -1,10 +1,8 @@
 import React from 'react'
 import './Journey.css'
-import Timeline from './Timeline';
 
 
-
-const events = [
+const professional = [
     {
       date: "December 2020 - Present",
       title: "Frontend Developer",
@@ -13,6 +11,7 @@ const events = [
         "Converting psd/wireframe to webpage",
         "Developing complex and user driven single page experience with validations and passing data to backend in ajax format"],
       icon: "fa fa-code",
+      color: "#00bcd4",
     },
     {
       date: "June 2019 - December 2022",
@@ -23,6 +22,7 @@ const events = [
         "Maintained Validations using Java based Code"
         ],
       icon: "fa fa-code",
+      color: "#cd7866", 
     },
     {
       date: "January 2018 - July 2018",
@@ -32,35 +32,87 @@ const events = [
         "Conducted talent review sessions and trained new employees to ensure team success"        
         ],
         icon: "fa fa-code",
-    },
-    {
-      date: "June 2014 - May 2017",
-      title: "Mumbai University",
-      companyname: "Computer Engineering - 5.88 CGPI",
-      description: [],
-      icon: "fa fa-graduation-cap",
-    },
-    {
-      date: "June 2010 - May 2014",
-      title: "Shreeram Polytechnic, Airoli",
-      companyname: "Computer Technology - 62.26%",
-      description: [],
-      icon: "fa fa-graduation-cap",
-    },
-    {
-      date: "June 2001 - March 2010",
-      title: "S.V. Joshi High School, Dombivli",
-      companyname: "S. S. C. - 77.09%",
-      description: [],
-      icon: "fa fa-graduation-cap",
+      color: "#00bcd4",
     },
   ];
 
+const academics=[
+  {
+    date: "June 2014 - May 2017",
+    title: "Mumbai University",
+    companyname: "Computer Engineering - 5.88 CGPI",
+    description: [],
+    icon: "fa fa-graduation-cap",
+    color: "#cd7866"
+  },
+  {
+    date: "June 2010 - May 2014",
+    title: "Shreeram Polytechnic, Airoli",
+    companyname: "Computer Technology - 62.26%",
+    description: [],
+    icon: "fa fa-graduation-cap",
+    color: "#00bcd4",
+  },
+  {
+    date: "June 2001 - March 2010",
+    title: "S.V. Joshi High School, Dombivli",
+    companyname: "S. S. C. - 77.09%",
+    description: [],
+    icon: "fa fa-graduation-cap",
+    color: "#cd7866",
+  }
+]
+
 function Journey() {
   return (
-    <div>
-      <Timeline title="Work and Education Timeline" events={events} />
+    <>
+    <div className="custom-container journey-container">
+      <div className="page-info-journey">
+          <h2 className="sub-heading">Professional Journey</h2>
+          <div className="line"></div>
+      </div>      
+      <div className="timeline-container">
+        <div className="timeline-line"></div>
+        {professional.map((item, index) => (
+          <div key={index} className={`timeline-main-container`}>
+            <div className="dot"></div>
+            <div className={`${index % 2 == 0 ? "right-margin" : "left-margin"}`}>
+              <div className="year-label" style={{ backgroundColor: item.color }}>{item.date}</div>
+              <div className="journey-info-container">
+                <h3 className="info-title">{item.title}</h3>
+                <h4 className="info-subtitle">{item.companyname}</h4>
+                <h5 className="info-subtitle">{item.title}</h5>
+                <p className="info-para">{item.description}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
+    <div className="custom-container journey-container">
+      <div className="page-info-journey">
+          <h2 className="sub-heading">Academics Journey</h2>
+          <div className="line"></div>
+      </div>        
+      <div className="timeline-container edu-container">
+        <div className="timeline-line"></div>
+        {academics.map((item, index) => (
+          <div key={index} className={`timeline-main-container`}>
+            <div className="dot"></div>
+            <div className={`${index % 2 == 0 ? "right-margin" : "left-margin"}`}>
+              <div className="year-label" style={{ backgroundColor: item.color }}>{item.date}</div>
+              <div className="journey-info-container">
+                <h3 className="info-title">{item.title}</h3>
+                <h3 className="info-subtitle">{item.companyname}</h3>
+                {/* <h3 className="info-subtitle">{item.title}</h3> */}
+                <p className="info-para">{item.title}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+    </>
   )
 }
 
