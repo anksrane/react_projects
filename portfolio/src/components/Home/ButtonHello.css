@@ -1,0 +1,62 @@
+/* From Uiverse.io by adamgiebl */ 
+.hover-styled-btn {
+    font-size: 20px;
+    background: var(--background-color-lighter);
+    color: var(--primary-color);
+    padding: 6px 20px;
+    display: flex;
+    align-items: center;
+    border: none;
+    border-radius: 25px !important;
+    overflow: hidden;
+    transition: all 0.2s;
+    cursor: pointer;
+    width: fit-content;
+    border: 1px solid ;
+  }
+  
+  .hover-styled-btn span {
+    display: block;
+    margin-left: 0.3em;
+    transition: all 0.3s ease-in-out;
+    font-size: calc(18px + (24 - 18) * ((100vw - 320px) / (1920 - 320)));
+  }
+  
+  .hover-styled-btn svg {
+    display: block;
+    transform-origin: center center;
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .hover-styled-btn:hover {
+    background-color: var(--text-color-blue-dark);
+    border: 1px solid var(--text-color-blue);
+  }
+  
+  .hover-styled-btn:hover .svg-wrapper {
+    animation: fly-1 0.6s ease-in-out infinite alternate;
+  }
+  
+  .hover-styled-btn:hover svg {
+    transform: translateX(3em) rotate(45deg) scale(1.1);
+    color: #fff;
+  }
+  
+  .hover-styled-btn:hover span {
+    transform: translateX(6em);
+  }
+  
+  .hover-styled-btn:active {
+    transform: scale(0.95);
+  }
+  
+  @keyframes fly-1 {
+    from {
+      transform: translateY(0.1em);
+    }
+  
+    to {
+      transform: translateY(-0.1em);
+    }
+  }
+  
