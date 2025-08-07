@@ -79,13 +79,52 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
     const onSubmit = async (data) => {
       setLoading(true);
 
-        const generateKeywords = (title, client) => {
-          const words = (title + ' ' + (client || '')).toLowerCase().split(/\s+/);
-          const cleaned = words
-            .map(word => word.replace(/[^a-z0-9]/gi, '')) // remove punctuation
-            .filter(word => word.length > 1);             // keep meaningful words only
-          return Array.from(new Set(cleaned));            // unique keywords only
-        }; 
+        const generateKeywords = (...args) => {
+          const processPhrase = (phrase) => {
+            const cleaned = phrase
+              .toLowerCase()
+              .replace(/[-_]/g, ' ')           // Replace - and _ with space
+              .replace(/[^\w\s]/gi, '');       // Remove punctuation
+
+            const words = cleaned.split(/\s+/).filter(w => w.length > 1);
+            const keywords = new Set(words);
+
+            // Incremental space-joined combinations (like n-grams)
+            for (let i = 0; i < words.length; i++) {
+              let combined = words[i];
+              for (let j = i + 1; j < words.length; j++) {
+                combined += ' ' + words[j];
+                keywords.add(combined);
+              }
+            }
+
+            // Full joined version (no spaces)
+            if (words.length > 1) {
+              keywords.add(words.join(''));
+            }
+
+            return Array.from(keywords);
+          };
+
+          const allKeywords = args.flatMap(arg => {
+            if (typeof arg === 'string') {
+              return processPhrase(arg);
+            }
+
+            // Handle array of objects like selectedCoders
+            if (Array.isArray(arg)) {
+              return arg.flatMap(item => {
+                if (typeof item === 'string') return processPhrase(item);
+                if (typeof item?.name === 'string') return processPhrase(item.name);
+                return [];
+              });
+            }
+
+            return [];
+          });
+
+          return Array.from(new Set(allKeywords));
+        };
 
         let selectedCoders;
         if(user.userRole=="Coder"){
@@ -138,7 +177,8 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
           cleaned.id = singleTask.id; // required for update
           cleaned.createdBy = singleTask.createdBy;
           cleaned.createdByName = singleTask.createdByName;
-          cleaned.keywords = generateKeywords(cleaned.title, cleaned.client);
+          cleaned.keywords = generateKeywords(cleaned.title, cleaned.client, selectedCoders);
+          console.log("cleaned",cleaned);
           const response = await updateTaskFirebase(singleTask.id, cleaned);
 
           if (response.success) {
@@ -156,8 +196,9 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
             ...cleaned,
             createdBy: user.id,
             createdByName: user.name,
-            keywords: generateKeywords(cleaned.title, cleaned.client)          
+            keywords: generateKeywords(cleaned.title, cleaned.client, selectedCoders)        
           };
+          console.log("createPayload",createPayload);
           try {
             const response=await addTaskFirebase(createPayload);
             if(response.success){
@@ -194,14 +235,32 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
           ):(
             <>
               <form onSubmit={handleSubmit(onSubmit)} className='container mx-auto pt-5 pb-4 relative'> 
+                {/* Client Input Start */}
+                  <div className="w-full">
+                    <Select 
+                      label="Client Name"
+                      defaultOption= "Select Client"
+                      className="py-1 text-sm"
+                      labelClass='font-semibold mt-2'
+                      options={clientOptions}
+                      // defaultValue={watch("client") || ""}
+                      value={watch("client") || ""}
+                      {...register("client",{
+                        required: "Please select Client",
+                      })}
+                      error={errors.client && errors.client.message}
+                    /> 
+                  </div>
+                {/* Client Input End */}  
+
                 {/* Title Input Start */}
                   <div className="w-full">
                     <Input 
-                        label="Title"
+                        label="Task Title"
                         placeholder="Enter Task Title"
                         type="text"
                         className="py-1 text-sm"
-                        labelClass='font-semibold'
+                        labelClass='font-semibold  mt-2'
                         {...register("title", {
                             required: "Title is Required",
                             pattern: {
@@ -217,7 +276,7 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
                 {/* Description Input Start */}
                   <div className="w-full">
                     <Input 
-                        label="Description"
+                        label="Task Description"
                         placeholder="Enter Task Description"
                         isTextarea = {true}
                         className="py-1 text-sm"
@@ -225,7 +284,7 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
                         {...register("description", {
                             required: "Description is Required",
                             pattern: {
-                                value: /^[a-zA-Z0-9 _.-]{1,100}$/,
+                                value: /^[^{}\[\];]{1,1000}$/,
                                 message: "Description can only contain letters, numbers, spaces, -, _, and ."
                             }
                         })}
@@ -237,7 +296,7 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
                 {/* Task Phase Input Start */}
                   <div className="w-full">
                     <Select 
-                      label="Phase"
+                      label="Task Phase"
                       defaultOption= "Select Phase"
                       className="py-1 text-sm"
                       labelClass='font-semibold mt-2'
@@ -254,7 +313,7 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
                   <div className="w-full">
                     <Select 
                     className="py-1 text-sm"
-                    label="Status"
+                    label="Task Status"
                     defaultOption= "Select Status"
                     labelClass='font-semibold mt-2'
                     options={statusesOptions}
@@ -266,11 +325,27 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
                   </div>
                 {/* Task Status Input End */}  
 
+                {/* Priority Input Start */}
+                  <div className="w-full">
+                    <Select 
+                    className="py-1 text-sm"
+                    label="Task Priority"
+                    defaultOption= "Select Priority"
+                    labelClass='font-semibold mt-2'
+                    options={taskPrioritiesOptions}
+                      {...register("priority",{
+                        required: "Please Select Priority",
+                      })}
+                      error={errors.priority && errors.priority.message}
+                    /> 
+                  </div>
+                {/* Priority Input End */}  
+
                 {/* Date Input Start */}
                 <div className='flex gap-2'>
                     <div className="w-full">
                       <DatePicker
-                        label="Start Date"
+                        label="Task Start Date"
                         labelClass='font-semibold mt-2'
                         className="py-1 text-sm"
                         {...register("startDate",{
@@ -282,7 +357,7 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
 
                     <div className="w-full">
                       <DatePicker
-                        label="End Date"
+                        label="Task End Date"
                         labelClass='font-semibold mt-2'
                         className="py-1 text-sm"
                         disabled={!startDateValue}
@@ -304,22 +379,6 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
                 </div>
                 {/* Date Input End */}  
 
-                {/* Priority Input Start */}
-                  <div className="w-full">
-                    <Select 
-                    className="py-1 text-sm"
-                    label="Priority"
-                    defaultOption= "Select Priority"
-                    labelClass='font-semibold mt-2'
-                    options={taskPrioritiesOptions}
-                      {...register("priority",{
-                        required: "Please Select Priority",
-                      })}
-                      error={errors.priority && errors.priority.message}
-                    /> 
-                  </div>
-                {/* Priority Input End */}  
-
                 {/* assignedCoderNames Input Start */}
                 {user.userRole !== "Coder" && (
                   <div className="w-full">
@@ -338,24 +397,6 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
                   </div>
                 )}
                 {/* assignedCoderNames Input End */}   
-
-                {/* Client Input Start */}
-                  <div className="w-full">
-                    <Select 
-                      label="Client"
-                      defaultOption= "Select Client"
-                      className="py-1 text-sm"
-                      labelClass='font-semibold mt-2'
-                      options={clientOptions}
-                      // defaultValue={watch("client") || ""}
-                      value={watch("client") || ""}
-                      {...register("client",{
-                        required: "Please select Client",
-                      })}
-                      error={errors.client && errors.client.message}
-                    /> 
-                  </div>
-                {/* Client Input End */}  
 
                 <div className='flex items-center justify-center gap-2 mt-3'>
                     <Button type="submit" variant='primary' className='py-2 text-sm' isLoading={isSubmitting}>
