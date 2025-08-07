@@ -1,9 +1,11 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
-import { ButtonWithIcon, AddTask, ConfirmationModal } from '../index.js'
+import { ButtonWithIcon, AddTask, ConfirmTrashModal } from '../index.js'
 import { InputSearch, Loader } from '../index.js';
 import { IoMdAdd } from "react-icons/io";
 import { fetchAllDropdowns } from '../../firebase/dropdownService.js';
 import { getAllTaskFirebase } from '../../firebase/getAllTasksWithFilter.js';
+import { MdOutlineClear } from "react-icons/md";
+import { useSelector } from 'react-redux';
 
 import {
   useReactTable,
@@ -16,13 +18,16 @@ import {
 
 
 function Tasks() {
+    const {user}=useSelector((state)=>state.auth);
+
     const [tasksData, setTasksData] = useState([]);
     const [loadingTasks, setLoadingTasks] = useState(true);
     const [loadingDropdowns, setLoadingDropdowns] = useState(true);
     const [showAddTaskModal, setShowAddTaskModal] = useState(false);
     const [singleTask, setSingleTask] = useState({});
     const [editingMode,setEditingMode]= useState(false);
-    const [showDeleteModal,setShowDeleteModal] = useState(true);
+    const [showDeleteModal,setShowDeleteModal] = useState(false);
+    const [deleteData, setDeleteData] = useState({});
 
     const [sorting,setSorting]=useState([]);
     const [globalFilter,setGlobalFilter]=useState('');
@@ -30,17 +35,20 @@ function Tasks() {
     const [pageSize] = useState(10);
     const [cursors, setCursors] = useState([null]); 
     const [searchText,setSearchText]=useState('');
+    const [appliedSearchText, setAppliedSearchText] = useState('');
     const [hasMorePages, setHasMorePages] = useState(false);
     const [filters, setFilters] = useState({
       phase: '',
       status: '',
-      priority: ''
+      priority: '',
+      trash: false
     });
 
     const [dropdowns, setDropdowns] = useState({
         taskPhases: [],
         taskPriorities: [],
-        statuses: []
+        statuses: [],
+        clients:[]
     });
 
     // Fetch all dropdown options
@@ -52,7 +60,7 @@ function Tasks() {
                 setDropdowns(data);
             } catch (error) {
                 console.error("Error fetching dropdown data:", error);
-                setDropdowns({ taskPhases: [], taskPriorities: [], statuses: [] });
+                setDropdowns({ taskPhases: [], taskPriorities: [], statuses: [],clients:[] });
             } finally {
               setLoadingDropdowns(false);
             }
@@ -62,6 +70,7 @@ function Tasks() {
 
     // Fetch all task with data
     const fetchTasksWith = useCallback(async (customFilters = filters, targetPage = currentPage) => {
+      setTasksData([]);
       setLoadingTasks(true);
 
       const sortBy = sorting[0]?.id || 'created_at';
@@ -71,7 +80,8 @@ function Tasks() {
       const cursorForQuery = cursors[targetPage] || null      
 
       const response = await getAllTaskFirebase(
-        searchText,
+        user,
+        appliedSearchText,
         customFilters,
         sortBy,
         sortOrder,
@@ -79,7 +89,8 @@ function Tasks() {
         cursorForQuery,
         dropdowns.taskPhases, 
         dropdowns.taskPriorities,
-        dropdowns.statuses     
+        dropdowns.statuses,
+        dropdowns.clients
       );
 
       if (response.success) {
@@ -95,7 +106,7 @@ function Tasks() {
       }
 
       setLoadingTasks(false);
-    },[filters, sorting, searchText, pageSize, cursors, currentPage, dropdowns]);
+    },[filters, sorting, appliedSearchText, pageSize, cursors, currentPage, dropdowns]);
 
 
     useEffect(() => {
@@ -103,11 +114,11 @@ function Tasks() {
       if (!loadingDropdowns) {
           fetchTasksWith(filters);
       }
-    }, [searchText, sorting, filters, currentPage, fetchTasksWith, loadingDropdowns]);
+    }, [appliedSearchText, sorting, filters, currentPage, fetchTasksWith, loadingDropdowns]);
 
     const columnHelper=createColumnHelper();
     const columns = [
-        columnHelper.accessor('client',{
+        columnHelper.accessor('clientLabel',{
             header: 'client',
             cell: info => info.getValue(),
             enableSorting: true,
@@ -179,7 +190,7 @@ function Tasks() {
             cell: props => (
             <div className="flex gap-2">
                 <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-xs"
+                className="bg-black text-white font-bold py-1 px-2 rounded text-xs"
                   onClick={() => {
                       setSingleTask(props.row.original); // Set task for editing
                       setEditingMode(true);
@@ -188,9 +199,14 @@ function Tasks() {
                 >
                 Edit
                 </button>
+
                 <button
                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-xs"
-                  onClick={() => alert(`Deleting task: ${props.row.original.id}`)}
+                  onClick={() => {
+                    // alert(`Deleting task: ${props.row.original.id}`)
+                    setDeleteData(props.row.original);
+                    setShowDeleteModal(true);
+                  }}
                 >
                 Delete
                 </button>
@@ -248,23 +264,7 @@ function Tasks() {
             }
         }
         return numbers;
-    }, [currentPage, pageCount]);
-
-    const handleClearSearch = () => {
-        setSearchText('');
-        setGlobalFilter(''); // Clears client-side filter
-    };    
-
-    const handleFilterChange = (filterName, value) => {
-        // Reset current page and cursors when filters change to start from beginning
-        setCurrentPage(0);
-        setCursors([null]);
-        setFilters(prev => {
-            const updated = { ...prev, [filterName]: value };
-            fetchTasksWith(updated);
-            return updated;
-        });
-    };
+    }, [currentPage, pageCount]);  
 
     const addIcon=<IoMdAdd />;  
 
@@ -282,12 +282,15 @@ function Tasks() {
         taskPhasesOptions={dropdowns.taskPhases} // Pass as prop
         taskPrioritiesOptions={dropdowns.taskPriorities} // Pass as prop
         statusesOptions={dropdowns.statuses} // Pass as prop
+        clientOptions={dropdowns.clients}
       />
     )}
-
+    
     {showDeleteModal && (
-      <ConfirmationModal
-       onClose={setShowDeleteModal(false)}
+      <ConfirmTrashModal
+       onClose={()=>setShowDeleteModal(false)}
+       deleteData={deleteData}
+       onTaskAdded={() => fetchTasksWith(filters)}
        />
     )}
 
@@ -297,10 +300,10 @@ function Tasks() {
       <div>
           {/* Add Task Button */}
           <ButtonWithIcon icon={addIcon} iconClass={'text-xl font-bold'} iconPosition="left" variant="primary" className='text-sm mt-0' 
-          onClick={()=>{
-            setShowAddTaskModal(true);
-            setEditingMode(false);
-            setSingleTask(null);
+            onClick={()=>{
+              setShowAddTaskModal(true);
+              setEditingMode(false);
+              setSingleTask(null);
             }}>
             Add Task
           </ButtonWithIcon>        
@@ -308,75 +311,114 @@ function Tasks() {
         <div className="mb-4 flex items-end justify-between">
 
           <div className='flex gap-1'>
-            <select
-              className="border px-2 py-1 text-sm rounded"
-              value={filters.phase}
-              // onChange={(e) => setFilters(prev => ({ ...prev, phase: e.target.value }))}
-              onChange={(e) => {
-                const newPhase = e.target.value;
-                setFilters(prev => {
-                  const updated = { ...prev, phase: newPhase };
-                  fetchTasksWith(updated);
-                  return updated;
-                });
-              }}              
-            >
-              <option value="">All Phases</option>
-              {dropdowns.taskPhases.map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
+            <div className='flex border rounded'>
+              <select
+                className="px-2 py-1 text-sm rounded"
+                value={filters.phase}
+                // onChange={(e) => setFilters(prev => ({ ...prev, phase: e.target.value }))}
+                onChange={(e) => {
+                  const newPhase = e.target.value;
+                  setFilters(prev => {
+                    const updated = { ...prev, phase: newPhase };
+                    fetchTasksWith(updated);
+                    return updated;
+                  });
+                }}              
+              >
+                <option value="">All Phases</option>
+                {dropdowns.taskPhases.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+              <button className='bg-red-500 hover:bg-red-700 p-1 rounded-e text-white'
+                onClick={()=>{
+                  setFilters(prev => ({ ...prev, phase: '' }));
+                }}
+              ><MdOutlineClear /></button>
+            </div>
 
-            <select
-              className="border px-2 py-1 text-sm rounded"
-              value={filters.status}
-              // onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-              onChange={(e) => {
-                const newStatus = e.target.value;
-                setFilters(prev => {
-                  const updated = { ...prev, status: newStatus };
-                  fetchTasksWith(updated); 
-                  return updated;
-                });
-              }}              
-            >
-              <option value="">All Status</option>
-              {dropdowns.statuses.map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
+            <div className='flex border rounded'>
+              <select
+                className="px-2 py-1 text-sm rounded"
+                value={filters.status}
+                // onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+                onChange={(e) => {
+                  const newStatus = e.target.value;
+                  setFilters(prev => {
+                    const updated = { ...prev, status: newStatus };
+                    fetchTasksWith(updated); 
+                    return updated;
+                  });
+                }}              
+              >
+                <option value="">All Status</option>
+                {dropdowns.statuses.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+              <button className='bg-red-500 hover:bg-red-700 p-1 rounded-e text-white'
+                onClick={()=>{
+                  setFilters(prev => ({ ...prev, status: '' }));
+                }}
+              ><MdOutlineClear /></button>              
+            </div>
 
-            <select
-              className="border px-2 py-1 text-sm rounded"
-              value={filters.priority}
-              // onChange={(e) => setFilters(prev => ({ ...prev, priority: e.target.value }))}
-              onChange={(e) => {
-                const newPriority = e.target.value;
-                setFilters(prev => {
-                  const updated = { ...prev, priority: newPriority };
-                  fetchTasksWith(updated); 
-                  return updated;
-                });
-              }}                 
-            >
-              <option value="">All Priorities</option>
-              {dropdowns.taskPriorities.map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
+            <div className='flex border rounded'>
+              <select
+                className="px-2 py-1 text-sm rounded"
+                value={filters.priority}
+                // onChange={(e) => setFilters(prev => ({ ...prev, priority: e.target.value }))}
+                onChange={(e) => {
+                  const newPriority = e.target.value;
+                  setFilters(prev => {
+                    const updated = { ...prev, priority: newPriority };
+                    fetchTasksWith(updated); 
+                    return updated;
+                  });
+                }}                 
+              >
+                <option value="">All Priorities</option>
+                {dropdowns.taskPriorities.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+              <button className='bg-red-500 hover:bg-red-700 p-1 rounded-e text-white'
+                onClick={()=>{
+                  setFilters(prev => ({ ...prev, priority: '' }));
+                }}
+              ><MdOutlineClear /></button>
+            </div>
           </div>
 
           {/* Input Search New*/}
-          <InputSearch 
-            type="text" 
-            placeholder="Search all tasks..." 
-            value={searchText} 
-            onChange={e=>setSearchText(e.target.value)} 
-            onSearch={(value)=>setGlobalFilter(value)} 
-            onClear={handleClearSearch}
-            showClear={true}
-          />        
+            <InputSearch 
+              type="text" 
+              placeholder="Search Client Name, Title" 
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)} 
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setAppliedSearchText(searchText); // Apply the current input
+                  setCurrentPage(0);
+                  setCursors([null]);
+                  fetchTasksWith(filters, 0);
+                }
+              }}
+              onSearch={(value) => {
+                setSearchText(value); // update input
+              }}
+              onClear={() => {
+                setSearchText('');
+                setAppliedSearchText('');
+                setGlobalFilter('');
+                setCurrentPage(0);
+                setCursors([null]);
+                fetchTasksWith(filters, 0);
+              }}
+              showClear={true}
+            />
         </div>
+
         {loadingTasks || loadingDropdowns ?(
           <div className="flex justify-center items-center h-40">
             <Loader color='text-blue' />

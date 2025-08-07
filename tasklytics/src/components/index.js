@@ -13,7 +13,7 @@ import Loader from "./ui/Loader";
 import Sidebar from "./layout/Sidebar";
 import Header from "./layout/Header";
 import AppLayout from "./layout/AppLayout";
-import ConfirmationModal from "./layout/ConfirmationModal";
+import ConfirmTrashModal from "./layout/ConfirmTrashModal";
 
 import Login from "./layout/Login";
 import Tasks from "./tasks/Tasks";
@@ -39,5 +39,5 @@ export {
     Sidebar,
     Header,
     AppLayout,
-    ConfirmationModal
+    ConfirmTrashModal
 };

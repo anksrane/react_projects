@@ -4,21 +4,37 @@ import { db } from "./firebaseConfig";
 const getLabel=(list,value)=>list.find(item=>item.value===value)?.label || value;
 
 export const getAllTaskFirebase = async (
+    user,
     searchTerm="",
     filters={},
     sortBy = "created_at",
-    sortOrder = "asc",
+    sortOrder = "dsc",
     pageSize = 10,
     cursor = null,
     taskPhasesList,      
     taskPrioritiesList,  
-    statusesList   
+    statusesList,
+    clientsList   
 ) => {
     try {
         const colRef= collection (db,'tasksTable');
         const conditions = [];
 
+        if (user.userRole === "Manager") {
+            conditions.push(
+                where("managerId", "array-contains", user.id)
+            );
+        } else if (user.userRole === "Coder") {
+            conditions.push(
+                where("coderIds", "array-contains", user.id)
+            );
+        }        
+
         // Filters (phase, status, priority)
+        if (searchTerm) {
+            const searchTermLower = searchTerm.toLowerCase();
+            conditions.push(where("keywords", "array-contains", searchTermLower));
+        }        
         if (filters.phase) {
             conditions.push(where("taskPhase", "==", filters.phase));
         }
@@ -27,6 +43,9 @@ export const getAllTaskFirebase = async (
         }
         if (filters.priority) {
             conditions.push(where("priority", "==", filters.priority));
+        }
+        if(typeof filters.trash === "boolean") {
+            conditions.push(where("trash", "==", filters.trash));
         }
 
         let baseQuery = query(
@@ -44,12 +63,12 @@ export const getAllTaskFirebase = async (
 
         const querySnapshot = await getDocs(finalQuery);
         const docs = querySnapshot.docs;    // All documents fetched by Firebase (up to pageSize + 1)
-
+        
         // Determine if there are more documents than the requested pageSize
         const hasMore = docs.length > pageSize;
 
         // The actual documents to return for the current page 
-        const tasksToReturn = docs.slice(0, pageSize);       
+        const tasksToReturn = docs.slice(0, pageSize);      
 
         // The next cursor should be the last document snapshot of the *current page's returned data*.
         // This is crucial for the `startAfter` logic on the next fetch.
@@ -66,7 +85,8 @@ export const getAllTaskFirebase = async (
                 // Apply human-readable labels
                 taskPhaseLabel: getLabel(taskPhasesList, data.taskPhase),
                 taskStatusLabel: getLabel(statusesList, data.taskStatus),
-                priorityLabel: getLabel(taskPrioritiesList, data.priority)
+                priorityLabel: getLabel(taskPrioritiesList, data.priority),
+                clientLabel:getLabel(clientsList,data.client)
             };
         }); 
 
