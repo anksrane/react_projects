@@ -1,17 +1,48 @@
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "./firebaseConfig";
+import { getAllMasterFirebase } from "./getAllMasterService";
 
-export const getAllTaskFirebase = async () => {
+const getLabel=(list,value)=>list.find(item=>item.value===value)?.label || value;
+
+export const getAllTaskFirebase = async (user, trashStatus) => {
     try {
-        const q = collection(db, "tasksTable");
-        const querySnapshot = await getDocs(q);
+        const tasksRef = collection(db, "tasksTable");
+        const conditions = [];
 
-        const allTasks=querySnapshot.docs.map(doc=>({
+        if (!trashStatus) {
+            conditions.push(where("trash", "==", false));
+        }    
+        
+        // Role-based filters
+        if (user.userRole === "Manager") {
+            conditions.push(where("managerId", "array-contains", user.id));
+        }else if (user.userRole === "Coder") {
+            conditions.push(where("coderIds", "array-contains", user.id));
+        }        
+
+        const q = conditions.length > 0 ? query(tasksRef, ...conditions) : tasksRef;      
+        const querySnapshot = await getDocs(q);
+        let allTasks=querySnapshot.docs.map(doc=>({
             id:doc.id,
             ...doc.data()
-        }))
-        console.log(allTasks);
+        })) 
         
+        const [statusMaster, priorityMaster, phaseMaster, clientMaster] = await Promise.all([
+            getAllMasterFirebase("statuses"),
+            getAllMasterFirebase("priorities"),
+            getAllMasterFirebase("phases"),
+            getAllMasterFirebase("clients"),
+        ]);  
+        
+        if (statusMaster.success && priorityMaster.success && phaseMaster.success && clientMaster.success) {
+            allTasks = allTasks.map(task => ({
+                ...task,
+                statusLabel: getLabel(statusMaster.data, task.taskStatus),
+                priorityLabel: getLabel(priorityMaster.data, task.priority),
+                phaseLabel: getLabel(phaseMaster.data, task.taskPhase),
+                clientLabel: getLabel(clientMaster.data, task.client),
+            }));
+        }        
 
         return {success:true, data:allTasks};
     }catch(error){

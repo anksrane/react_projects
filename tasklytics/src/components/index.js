@@ -10,15 +10,29 @@ import MultiSelect_Tag from "./ui/MultiSelect_Tag";
 import ButtonWithIcon from "./ui/ButtonWithIcon";
 import Loader from "./ui/Loader";
 
-import Sidebar from "./layout/Sidebar";
-import Header from "./layout/Header";
-import AppLayout from "./layout/AppLayout";
-import ConfirmTrashModal from "./layout/ConfirmTrashModal";
-
-import Login from "./layout/Login";
 import Tasks from "./tasks/Tasks";
 import AddTask from "./tasks/AddTask";
 import ViewTask from "./tasks/ViewTask";
+import Deleted from "./tasks/Deleted";
+import ConfirmTrashModal from "./tasks/ConfirmTrashModal";
+import ConfirmDeleteModal from "./tasks/ConfirmDeleteModal";
+import RestoreTrashModal from "./tasks/RestoreTrashModal";
+
+import Dashboard from './dashboard/Dashboard'
+import CountCard from "./dashboard/CountCard";
+import StackedBarChart from "./charts/StackedBarChart";
+import TasksDueThisWeek from "./dashboard/TasksDueThisWeek";
+import PieChart from "./charts/PieChart";
+
+import Sidebar from "./layout/Sidebar";
+import Header from "./layout/Header";
+import AppLayout from "./layout/AppLayout";
+import Login from "./layout/Login";
+
+import Skeleton from "./ui/Skeleton/Skeleton";
+import ChartSkeleton from "./ui/Skeleton/ChartSkeleton";
+import TasksDueThisWeekSkeleton from './ui/Skeleton/TasksDueThisWeekSkeleton';
+import PieChartSkeleton from './ui/Skeleton/PieChartSkeleton';
 
 export { 
     Loader,
@@ -37,9 +51,23 @@ export {
     Tasks,
     AddTask,
     ViewTask,
+    Deleted,
+    ConfirmTrashModal,
+    ConfirmDeleteModal,
+    RestoreTrashModal,    
+
+    Dashboard,
+    CountCard,
+    StackedBarChart,
+    TasksDueThisWeek,
+    PieChart,
 
     Sidebar,
     Header,
     AppLayout,
-    ConfirmTrashModal
+
+    Skeleton,
+    ChartSkeleton,
+    PieChartSkeleton,
+    TasksDueThisWeekSkeleton
 };

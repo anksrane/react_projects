@@ -7,6 +7,7 @@ import { getCodersList } from '../../firebase/codersService';
 import { addTaskFirebase } from '../../firebase/addTaskService';
 import { updateTaskFirebase } from '../../firebase/updateTaskService';
 import { toast } from 'react-toastify';
+import { Timestamp } from "firebase/firestore";
 
 function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptions, taskPrioritiesOptions, statusesOptions, clientOptions }) {
     const {user}=useSelector((state)=>state.auth);
@@ -22,6 +23,8 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
       formState:{ errors, isSubmitting },
     } = useForm();
     const startDateValue = watch("startDate");    
+
+    const formatDate = (val) => val?.toDate?.().toISOString().slice(0, 10) || "";
 
     useEffect(()=>{
       async function fetchCoders() {
@@ -52,8 +55,8 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
           description: singleTask.description || '',
           taskPhase: singleTask.taskPhase || '',
           taskStatus: singleTask.taskStatus || '',
-          startDate: singleTask.startDate || '',
-          endDate: singleTask.endDate || '',
+          startDate: formatDate(singleTask.startDate) || '',
+          endDate: formatDate(singleTask.endDate) || '',
           priority: singleTask.priority || '',
           coders: singleTask.coders?.map(coder => coder.id) || [],
           client: singleTask.client || '',
@@ -141,8 +144,10 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
             description: data.description.trim(),
             taskPhase: data.taskPhase.trim(),
             taskStatus: data.taskStatus.trim(),
-            startDate: data.startDate.trim(),
-            endDate: data.endDate.trim(),
+            // startDate: data.startDate.trim(),
+            // endDate: data.endDate.trim(),
+            startDate: data.startDate ? Timestamp.fromDate(new Date(data.startDate)) : null,
+            endDate: data.endDate ? Timestamp.fromDate(new Date(data.endDate)) : null,            
             priority: data.priority.trim(),
             coders: selectedCoders,   
             coderIds: selectedCoders.map(c => c.id),
@@ -177,13 +182,16 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
           cleaned.id = singleTask.id; // required for update
           cleaned.createdBy = singleTask.createdBy;
           cleaned.createdByName = singleTask.createdByName;
-          cleaned.keywords = generateKeywords(cleaned.title, cleaned.client, selectedCoders);
+          const newKeywords = generateKeywords(cleaned.title, cleaned.client, selectedCoders);
+          cleaned.keywords = singleTask.serialNo 
+              ? Array.from(new Set([...newKeywords, singleTask.serialNo]))
+              : newKeywords;
           console.log("cleaned",cleaned);
           const response = await updateTaskFirebase(singleTask.id, cleaned);
 
           if (response.success) {
             setLoading(false)
-            toast.success("Task Updated Successfully");
+            toast.success(`Task ${singleTask.serialNo} Updated Successfully`);
             onClose();
             reset();
             onTaskAdded?.();            
@@ -203,7 +211,7 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
             const response=await addTaskFirebase(createPayload);
             if(response.success){
               setLoading(false);
-              toast.success("Task Created Successfully");
+              toast.success(`Task ${response.serialNo} Created Successfully`);
               onClose();
               reset();
               onTaskAdded?.();
@@ -219,8 +227,8 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
     };
 
     return (
-      <div ref={backdropRef} className='absolute bg-black bg-opacity-50 z-20 w-full h-full cursor-pointer'  onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}>
-        <div className='absolute bg-white top-0 right-0 h-full w-96 p-4 overflow-y-auto cursor-auto' onMouseDown={(e) => e.stopPropagation()} onMouseUp={(e) => e.stopPropagation()} >
+      <div ref={backdropRef} className='fixed inset-0 bg-black bg-opacity-50 z-20 flex justify-end cursor-pointer' onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}>
+        <div className='bg-white w-96 h-full flex flex-col p-4 cursor-auto' onMouseDown={(e) => e.stopPropagation()} onMouseUp={(e) => e.stopPropagation()} >
           <div className='flex justify-end mb-2'>
             <button onClick={onClose}><IoMdCloseCircle className='text-2xl'/></button>
           </div>
@@ -234,6 +242,7 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
             </>
           ):(
             <>
+            <div className="flex-1 overflow-y-auto">
               <form onSubmit={handleSubmit(onSubmit)} className='container mx-auto pt-5 pb-4 relative'> 
                 {/* Client Input Start */}
                   <div className="w-full">
@@ -293,6 +302,22 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
                   </div>
                 {/* Description Input End */}  
 
+                {/* Priority Input Start */}
+                  <div className="w-full">
+                    <Select 
+                    className="py-1 text-sm"
+                    label="Task Priority"
+                    defaultOption= "Select Priority"
+                    labelClass='font-semibold mt-2'
+                    options={taskPrioritiesOptions}
+                      {...register("priority",{
+                        required: "Please Select Priority",
+                      })}
+                      error={errors.priority && errors.priority.message}
+                    /> 
+                  </div>
+                {/* Priority Input End */}  
+
                 {/* Task Phase Input Start */}
                   <div className="w-full">
                     <Select 
@@ -324,22 +349,6 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
                     /> 
                   </div>
                 {/* Task Status Input End */}  
-
-                {/* Priority Input Start */}
-                  <div className="w-full">
-                    <Select 
-                    className="py-1 text-sm"
-                    label="Task Priority"
-                    defaultOption= "Select Priority"
-                    labelClass='font-semibold mt-2'
-                    options={taskPrioritiesOptions}
-                      {...register("priority",{
-                        required: "Please Select Priority",
-                      })}
-                      error={errors.priority && errors.priority.message}
-                    /> 
-                  </div>
-                {/* Priority Input End */}  
 
                 {/* Date Input Start */}
                 <div className='flex gap-2'>
@@ -404,7 +413,8 @@ function AddTask({onClose, singleTask, editingMode, onTaskAdded, taskPhasesOptio
                     </Button>
                     <Button type="reset" variant='danger' className='py-2 text-sm' onClick={()=>reset()}>Reset</Button>
                 </div>
-              </form>            
+              </form>   
+            </div>         
             </>
           )}
         </div>

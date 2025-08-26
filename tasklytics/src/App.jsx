@@ -2,13 +2,15 @@ import './App.css'
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import TaskListPage from './pages/TaskListPage';
-import AddTaskPage from './pages/AddTaskPage';
+import DeletedListPage from './pages/DeletedListPage';
+import DashboardPage from './pages/DashboardPage';
 import { AppLayout } from './components';
 import  ProtectedRoutes  from './routes/ProtectedRoutes'
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { checkAuth } from './features/auth/authActions';
 import { Loader } from './components';
+import { toggleSidebar } from "./features/ui/uiSlice";
 
 function App() {
     const dispatch=useDispatch();
@@ -16,6 +18,7 @@ function App() {
 
     useEffect(()=>{
       dispatch(checkAuth());
+      dispatch(toggleSidebar());
     },[dispatch])
 
     if(loading){
@@ -31,11 +34,12 @@ function App() {
         <Route element={<ProtectedRoutes />}>
           <Route element={<AppLayout />}>
             <Route path='/tasks' element={<TaskListPage />}/>
-            <Route path='/tasks/deleted' element={<TaskListPage />}/>
+            <Route path='/deleted' element={<DeletedListPage />}/>
+            <Route path='/dashboard' element={<DashboardPage />}/>
           </Route>
         </Route>
 
-        <Route path='*' element={<Navigate to="/tasks" replace />} />
+        <Route path='*' element={<Navigate to="/dashboard" replace />} />
       </Routes>
     )
 }

@@ -1,16 +1,14 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
-import { ButtonWithIcon, AddTask, ViewTask, ConfirmTrashModal } from '../index.js'
+import { ViewTask, ConfirmDeleteModal, RestoreTrashModal } from '../index.js'
 import { InputSearch, Loader } from '../index.js';
 import { IoMdAdd } from "react-icons/io";
 import { fetchAllDropdowns } from '../../firebase/dropdownService.js';
 import { getAllTaskFirebase } from '../../firebase/getAllTasksWithFilter.js';
-import { deleteAllTasksService } from '../../firebase/deleteAllTasksService.js'
 import { MdOutlineClear } from "react-icons/md";
-import { TbEdit } from "react-icons/tb";
 import { IoEyeSharp } from "react-icons/io5";
 import { GoTrash } from "react-icons/go";
+import { MdOutlineRestorePage } from "react-icons/md";
 import { useSelector } from 'react-redux';
-import { Timestamp } from "firebase/firestore";
 
 import {
   useReactTable,
@@ -21,39 +19,17 @@ import {
   getSortedRowModel,
 } from '@tanstack/react-table';
 
-const formatDate = (val) => {
-  if (!val) return "-";
-  let dateObj;
-  if (val instanceof Timestamp) {
-    dateObj = val.toDate();
-  } else if (val?.seconds) {
-    dateObj = new Date(val.seconds * 1000);
-  } else if (val instanceof Date) {
-    dateObj = val;
-  } else {
-    return String(val);
-  }  
-  // Format as DD-MM-YYYY
-  const day = String(dateObj.getDate()).padStart(2, '0');
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const month = monthNames[dateObj.getMonth()]; // Months are 0-based
-  const year = dateObj.getFullYear();
 
-  return `${day}-${month}-${year}`;
-};
-
-function Tasks() {
+function Deleted() {
     const {user}=useSelector((state)=>state.auth);
 
     const [tasksData, setTasksData] = useState([]);
     const [loadingTasks, setLoadingTasks] = useState(true);
     const [loadingDropdowns, setLoadingDropdowns] = useState(true);
-    const [showAddTaskModal, setShowAddTaskModal] = useState(false);
-    const [singleTask, setSingleTask] = useState({});
-    const [editingMode,setEditingMode]= useState(false);
     const [showDeleteModal,setShowDeleteModal] = useState(false);
+    const [restoreTrashModal,setRestoreTrashModal] = useState(false);
     const [deleteData, setDeleteData] = useState({});
+    const [restoreData, setRestoreData] = useState({});
     const [showViewModal,setShowViewModal] = useState(false);
     const [viewData, setViewData] = useState({});
 
@@ -69,7 +45,7 @@ function Tasks() {
       phase: '',
       status: '',
       priority: '',
-      trash: false
+      trash: true
     });
 
     const [dropdowns, setDropdowns] = useState({
@@ -146,12 +122,6 @@ function Tasks() {
 
     const columnHelper=createColumnHelper();
     const columns = [
-        columnHelper.accessor('serialNo',{
-            header: 'Sr No',
-            cell: info => info.getValue(),
-            enableSorting: true,
-            enableGlobalFilter: true
-        }),      
         columnHelper.accessor('clientLabel',{
             header: 'client',
             cell: info => info.getValue(),
@@ -196,7 +166,7 @@ function Tasks() {
                   break;
               }
                   return (
-                      <span className={`px-2 py-1 rounded-lg text-xs font-semibold ${priorityClass}`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${priorityClass}`}>
                       {priority}
                       </span>
                   );
@@ -204,15 +174,9 @@ function Tasks() {
             enableSorting: true,
             enableGlobalFilter: true
         }),
-        columnHelper.accessor('startDate',{
-            header: 'Start Date',
-            cell: info => formatDate(info.getValue()),
-            enableSorting: true,
-            enableGlobalFilter: true
-        }),
         columnHelper.accessor('endDate',{
             header: 'Due Date',
-            cell: info => formatDate(info.getValue()),
+            cell: info => info.getValue(),
             enableSorting: true,
             enableGlobalFilter: true
         }),
@@ -223,17 +187,18 @@ function Tasks() {
             cell: props => (
             <div className="flex gap-3">
                 <button
-                className="border border-slate-500 font-bold p-1 hover:delay-100 hover:bg-black hover:text-white rounded text-xs"
+                title="Restore Task"
+                className="border border-red-500 font-bold p-1 hover:delay-100 hover:bg-red-500 text-red-500 hover:text-white rounded text-xs"
                   onClick={() => {
-                      setSingleTask(props.row.original); // Set task for editing
-                      setEditingMode(true);
-                      setShowAddTaskModal(true);
+                    setRestoreData(props.row.original);
+                    setRestoreTrashModal(true);
                   }}
                 >
-                <TbEdit className='text-xl font-bold'/>
+                <MdOutlineRestorePage className='text-lg font-bold'/>
                 </button>
 
                 <button
+                title="View Task"
                 className="border border-slate-500 font-bold p-1 hover:delay-100 hover:bg-black hover:text-white rounded text-xs"
                   onClick={() => {
                     setViewData(props.row.original);
@@ -244,6 +209,7 @@ function Tasks() {
                 </button>
 
                 <button
+                title="Delete Task"
                 className="border border-red-500 font-bold p-1 hover:delay-100 hover:bg-red-500 text-red-500 hover:text-white rounded text-xs"
                   onClick={() => {
                     setDeleteData(props.row.original);
@@ -310,37 +276,8 @@ function Tasks() {
 
     const addIcon=<IoMdAdd />;  
 
-    
-    const handleDeleteAll = async () => {
-        if (!window.confirm("Are you sure you want to delete all tasks and reset the counter?")) {
-            return;
-        }
-        try {
-            await deleteAllTasksService();
-            fetchTasksWith(filters);
-            alert("All tasks deleted and serial number reset!");
-        } catch (error) {
-            alert("Error deleting tasks. Check console for details.",error);
-        }
-    };
-
     return (
     <>
-
-    {showAddTaskModal && (
-
-      <AddTask 
-        onClose={() => setShowAddTaskModal(false)} 
-        show={showAddTaskModal} 
-        singleTask= {singleTask}
-        editingMode={editingMode}
-        onTaskAdded={() => fetchTasksWith(filters)} 
-        taskPhasesOptions={dropdowns.taskPhases} // Pass as prop
-        taskPrioritiesOptions={dropdowns.taskPriorities} // Pass as prop
-        statusesOptions={dropdowns.statuses} // Pass as prop
-        clientOptions={dropdowns.clients}
-      />
-    )}
 
     {showViewModal && (
       <ViewTask
@@ -351,26 +288,27 @@ function Tasks() {
     )}
     
     {showDeleteModal && (
-      <ConfirmTrashModal
+      <ConfirmDeleteModal
        onClose={()=>setShowDeleteModal(false)}
        deleteData={deleteData}
        onTaskAdded={() => fetchTasksWith(filters)}
        />
     )}
+    
+    {restoreTrashModal && (
+      <RestoreTrashModal
+       onClose={()=>setRestoreTrashModal(false)}
+       restoreData={restoreData}
+       onTaskAdded={() => fetchTasksWith(filters)}
+       />
+    )}
+
+
 
     <div className="mx-auto p-4 z-10">
-      <h2 className="text-2xl font-bold mb-4 text-center">Task List</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">Trash List</h2>
       
-      <div>
-          {/* Add Task Button */}
-          <ButtonWithIcon icon={addIcon} iconClass={'text-xl font-bold'} iconPosition="left" variant="primary" className='text-sm mt-0' 
-            onClick={()=>{
-              setShowAddTaskModal(true);
-              setEditingMode(false);
-              setSingleTask(null);
-            }}>
-            Add Task
-          </ButtonWithIcon>        
+      <div>     
         {/* Global Search Input */}
         <div className="mb-4 flex items-end justify-between">
 
@@ -451,10 +389,6 @@ function Tasks() {
                   setFilters(prev => ({ ...prev, priority: '' }));
                 }}
               ><MdOutlineClear /></button>
-            </div>
-
-            <div>
-              <button onClick={handleDeleteAll} className='bg-black text-white py-1 px-2 rounded-lg'>Delete All</button>
             </div>
           </div>
 
@@ -540,7 +474,7 @@ function Tasks() {
                     {row.getVisibleCells().map(cell => (
                       <td
                         key={cell.id}
-                        className="px-6 py-3 whitespace-nowrap text-sm text-gray-900 text-left"
+                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-left"
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>
@@ -628,4 +562,4 @@ function Tasks() {
     )
 }
 
-export default Tasks
+export default Deleted
