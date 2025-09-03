@@ -4,13 +4,16 @@ import LoginPage from './pages/LoginPage';
 import TaskListPage from './pages/TaskListPage';
 import DeletedListPage from './pages/DeletedListPage';
 import DashboardPage from './pages/DashboardPage';
+import ClientsPage from './pages/ClientsPage';
+import PhasesPage from './pages/PhasesPage';
+import PrioritiesPage from './pages/PrioritiesPage';
+import StatusPage from './pages/StatusPage';
 import { AppLayout } from './components';
 import  ProtectedRoutes  from './routes/ProtectedRoutes'
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { checkAuth } from './features/auth/authActions';
 import { Loader } from './components';
-import { toggleSidebar } from "./features/ui/uiSlice";
 
 function App() {
     const dispatch=useDispatch();
@@ -18,7 +21,6 @@ function App() {
 
     useEffect(()=>{
       dispatch(checkAuth());
-      dispatch(toggleSidebar());
     },[dispatch])
 
     if(loading){
@@ -36,6 +38,10 @@ function App() {
             <Route path='/tasks' element={<TaskListPage />}/>
             <Route path='/deleted' element={<DeletedListPage />}/>
             <Route path='/dashboard' element={<DashboardPage />}/>
+            <Route path='/clients' element={<ClientsPage />}/>
+            <Route path='/phases' element={<PhasesPage />}/>
+            <Route path='/priorities' element={<PrioritiesPage />}/>
+            <Route path='/statuses' element={<StatusPage />}/>
           </Route>
         </Route>
 

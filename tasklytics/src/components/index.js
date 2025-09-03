@@ -24,6 +24,22 @@ import StackedBarChart from "./charts/StackedBarChart";
 import TasksDueThisWeek from "./dashboard/TasksDueThisWeek";
 import PieChart from "./charts/PieChart";
 
+import ClientsList from './clients/ClientsList';
+import AddEditClient from './clients/AddEditClient';
+import DeleteClient from './clients/DeleteClient';
+
+import PhaseList from "./phases/PhaseList";
+import AddEditPhase from './phases/AddEditPhase';
+import DeletePhase from './phases/DeletePhase';
+
+import PrioritiesList from "./priorities/PrioritiesList";
+import AddEditPriorities from './priorities/AddEditPriorities';
+import DeletePriorities from './priorities/DeletePriorities';
+
+import StatusesList from './statuses/StatusesList';
+import AddEditStatus from './statuses/AddEditStatus';
+import DeleteStatus from "./statuses/DeleteStatus";
+
 import Sidebar from "./layout/Sidebar";
 import Header from "./layout/Header";
 import AppLayout from "./layout/AppLayout";
@@ -61,6 +77,22 @@ export {
     StackedBarChart,
     TasksDueThisWeek,
     PieChart,
+
+    ClientsList,
+    AddEditClient,
+    DeleteClient,
+
+    PhaseList,
+    AddEditPhase,
+    DeletePhase,
+
+    PrioritiesList,
+    AddEditPriorities,
+    DeletePriorities,
+
+    StatusesList,
+    AddEditStatus,
+    DeleteStatus,
 
     Sidebar,
     Header,

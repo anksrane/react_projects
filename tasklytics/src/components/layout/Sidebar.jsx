@@ -5,20 +5,22 @@ import { FaTasks } from "react-icons/fa";
 import { MdDashboardCustomize } from "react-icons/md";
 import { BiTask } from "react-icons/bi";
 import { MdGroups } from "react-icons/md";
-import { IoAnalyticsSharp } from "react-icons/io5";
 import { TiPower } from "react-icons/ti";
 import { GoTrash } from "react-icons/go";
+import { GoOrganization } from "react-icons/go";
+import { IoSettings } from "react-icons/io5";
 
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logoutUser } from '../../features/auth/authActions'
-import { toggleSidebar } from "../../features/ui/uiSlice"
+import { setIsSidebarOpen } from "../../features/ui/uiSlice"
 
 function Sidebar({isOpen}) {
+    const {user} = useSelector((state)=>state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const handleLogout = async () => {
-      dispatch(toggleSidebar());
+      dispatch(setIsSidebarOpen(false));
       await dispatch(logoutUser());
       navigate('/login');
     };    
@@ -26,10 +28,17 @@ function Sidebar({isOpen}) {
     const navItems=[
       { name: 'Dashboard', path:"/dashboard", icon:MdDashboardCustomize},
       { name: 'Tasks', path:"/tasks", icon: BiTask},
-      { name: 'Team', path: '/team', icon:MdGroups },
-      { name: 'Analytics', path: '/analytics',icon:IoAnalyticsSharp },    
-      { name: 'Deleted Items', path: '/deleted',icon:GoTrash },    
+      // { name: 'Team', path: '/team', icon:MdGroups },   
+      { name: 'Deleted Items', path: '/deleted', icon:GoTrash, role: 'Admin' },    
+      { name: 'Clients', path: '/clients', icon:IoSettings, role: 'Admin' },    
+      { name: 'Phases', path: '/phases', icon:IoSettings, role: 'Admin' },    
+      { name: 'Priorities', path: '/priorities', icon:IoSettings, role: 'Admin' },    
+      { name: 'Statuses', path: '/statuses', icon:IoSettings, role: 'Admin' },    
     ]    
+
+    const visibleNavItems = navItems.filter(
+      (item) => !item.role || item.role === user.userRole
+    );    
 
     return (
       <aside className={`h-screen bg-gray-100 border-r shadow-md p-2 flex flex-col justify-between duration-500 ${isOpen? 'w-64' : 'w-20'}`}>
@@ -40,7 +49,7 @@ function Sidebar({isOpen}) {
           </div>
 
           <nav className="space-y-3 mt-5">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const Icon = item.icon;
               return (
                 <NavLink
