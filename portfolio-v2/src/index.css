@@ -1,0 +1,54 @@
+:root {
+  /* Base / Light Theme */
+  --background: #f3f3f3;
+  --background-contrast: #e0e3e6;  
+
+  --primary: #005A70;
+  --primary-dark: #01333E;
+  --secondary: #E67817;
+  --secondary-dark: #8B3B00;
+
+  --text-color:#1B1F22;
+  --subtext-color:"#5A5E61";
+
+  --white: #fff; 
+  --black: #000;  
+  --grey: #C9CCCE; 
+  --border: 0, 0, 0;  
+}
+
+.dark {
+  /* Base / Dark Theme */
+  --background: #121314; 
+  --background-contrast: #1e1f22; 
+  
+  --primary: #17C67E;
+  --primary-dark: #045335;
+  --secondary: #00B4E6;
+  --secondary-dark: #0086B6;
+
+  --text-color:#E6E6E6;
+  --subtext-color:"#9A9A9A";
+  
+  --white: #fff; 
+  --black: #000;  
+  --grey: #3A3B3E;
+  --border: 255, 255, 255;
+}
+
+/* Inter Font */
+@font-face {
+  font-family: 'Inter';
+  src: url('./assets/fonts/InterVariable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('./assets/fonts/InterVariable-Italic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
