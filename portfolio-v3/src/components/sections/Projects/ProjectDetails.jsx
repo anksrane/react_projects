@@ -1,0 +1,139 @@
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination, Autoplay, Navigation } from "swiper/modules";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { FaGithub } from "react-icons/fa6";
+import { FaLink } from "react-icons/fa";
+import projectsData from "./projectsData";
+
+import "swiper/css";
+import "swiper/css/pagination";
+import "swiper/css/autoplay";
+import "swiper/css/navigation";
+import "./ProjectDetails.css";
+
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+
+const ProjectDetails = () => {
+  const { slug } = useParams();
+  const project = projectsData.find((p) => p.slug === slug);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 769);
+
+  useGSAP(()=>{
+    gsap.fromTo(
+      ".proj-det-heading",
+      { y: 50, opacity: 0 },
+      { y: 0, opacity: 1, duration: 1.2, ease: "power3.out" }
+    );
+
+    gsap.fromTo(
+      ".proj-det-desc",
+      { y: 30, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 1,
+        stagger: 0.15,
+        ease: "power3.out"
+      }
+    );  
+
+    // proj-det-icon scroll animation
+    gsap.fromTo(
+      ".proj-det-icon",
+      { y: 30, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".skills-container-icons",
+          start: "top bottom",   
+          once: true,          
+          // markers:true,
+          immediateRender:false,
+        }
+      }
+    );    
+  })   
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 769);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const imagesToShow = isMobile ? project.imagesMobile : project.images;
+
+  if (!project) {
+    return (
+      <div style={{ color: "#000", textAlign: "center", marginTop: "100px" }}>
+        Project not found.
+      </div>
+    );
+  } 
+
+  return (
+    <>
+      <section className="container">
+        <div className="split-container">   
+          <div className="right-panel">
+            <Swiper
+              spaceBetween={20}
+              slidesPerView={1}
+              loop={true}
+              pagination={{ clickable: true }}
+              // navigation={true}
+              autoplay={{
+                delay: 4000,
+                disableOnInteraction: false
+              }}              
+              modules={[Pagination, Autoplay, Navigation ]}
+            >
+              {imagesToShow?.map((img, i) => (
+                <SwiperSlide key={i}>
+                  <img src={img} alt={`Project Slide ${i + 1}`} className="img-responsive"/>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>                      
+          <div className="left-panel">
+            <div>
+              <h1 className="proj-det-heading" >{project.title}</h1>   
+              <div className="proj-det-desc-container">{project.longDesc ? (
+                project.longDesc.map((para,index)=>(
+                  <p key={index} className="proj-det-desc">{para}</p>
+                ))
+              ):""}</div> 
+              <h4 className="tech-title">Techonologies: </h4>
+              <div className="skills-container-icons">
+                  {project.skillsIcons.map((skill, i) => (
+                    i < project.skillsIcons.length 
+                      ? <img key={i} src={skill} alt="" className="img-responsive proj-det-icon" />:""
+                  ))}
+              </div> 
+              <div className="btns-container">
+                {project.projLink ? (
+                  project.projLink.map((link, index) => (
+                    <a key={index} href={link} className="proj-links" target="_blank" rel="noopener noreferrer">
+                      <FaLink /> Live Demo {project.projLink.length > 1 ? index + 1 : ""}
+                    </a>
+                  ))
+                ) : ""}                              
+                {project.gitHub?(<a href={project.gitHub} className="proj-links" target="_blank"><FaGithub /> Github Repo</a> ):""} 
+              </div>                 
+            </div>       
+          </div>
+        </div>
+      </section>
+    </>
+  );
+};
+
+export default ProjectDetails;

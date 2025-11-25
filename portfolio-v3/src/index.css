@@ -1,0 +1,55 @@
+:root {
+  /* Base / Light Theme */
+  --background: #FFFFFF;
+  --background-contrast: #e7e7e7;   /* Light neutral surface */
+
+  --primary: #006A3B;               /* Strong green */
+  --primary-dark: #004427;          /* Hover / pressed */
+
+  --secondary: #FF8A2B;             /* Vibrant accent */
+  --secondary-dark: #B85E14;        /* Hover / pressed */
+
+  --text-color: #1A1D1F;            /* High contrast body text */
+  --subtext-color: #6A6E70;         /* Medium contrast helper text */
+
+  --white: #FFFFFF;
+  --black: #000000;
+  --grey: #D4D6D7;                  /* Neutral border/surface separator */
+  --border: 0, 0, 0;  
+}
+
+.dark {
+  /* Base / Dark Theme */
+  --background: #121314; 
+  --background-contrast: #1e1f22; 
+  
+  --primary: #17C67E;
+  --primary-dark: #045335;
+  --secondary: #00B4E6;
+  --secondary-dark: #0086B6;
+
+  --text-color:#E6E6E6;
+  --subtext-color:"#9A9A9A";
+  
+  --white: #fff; 
+  --black: #000;  
+  --grey: #3A3B3E;
+  --border: 255, 255, 255;
+}
+
+/* Inter Font */
+@font-face {
+  font-family: 'Inter';
+  src: url('./assets/fonts/InterVariable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('./assets/fonts/InterVariable-Italic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
