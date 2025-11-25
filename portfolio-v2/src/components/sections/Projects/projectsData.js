@@ -98,34 +98,34 @@ const projectsData = [
         ],
         status: "Ongoing"
     },
-    // {
-    //     id: 2,
-    //     title: "Gmmco",
-    //     slug: "gmmco",
-    //     image: gmmcoImage,
-    //     shortDesc: "A modular React-based frontend built for Gmmco, featuring reusable components, smooth navigation with React Router, and basic Redux-driven state management, styled with Tailwind CSS.",
-    //     longDesc: ["Gmmco Inc. is a leading industrial solutions provider, and this project involved building a clean, scalable, and high-performance frontend for their corporate website. The entire interface was developed using React with a modular architecture to ensure flexibility, easy maintenance, and component reusability across the platform.",
-    //     "To enhance the user experience, React Router was implemented for smooth, multi-page navigation, while basic Redux was integrated to handle essential state management across key UI sections. Tailwind CSS was used to create a modern and responsive design system, supported by HTML, CSS, and JavaScript for additional structure and behavior.",
-    //     "The result is a fast, organized, and visually consistent frontend that aligns with Gmmco’s brand identity and improves overall user interaction."],
-    //     link: "/projects/gmmco",
-    //     projLink: ["https://www.gmmco.in/"],
-    //     gitHub: "",
-    //     skills: ["React.js", "Redux Toolkit", "Tailwind CSS", "Vite", "HTML", "CSS", "JavaScript"],
-    //     skillsIcons: [icons.reactIcon, icons.reduxIcon, icons.tailwindIcons, icons.viteIcon, icons.htmlIcons, icons.cssIcons, icons.jsIcon],
-    //     images: [
-    //       gmmcoImage1,
-    //       gmmcoImage2,
-    //       gmmcoImage3,
-    //       gmmcoImage4,
-    //     ],
-    //     imagesMobile: [
-    //         gmmcoImage1Mob,
-    //         gmmcoImage2Mob,
-    //         gmmcoImage3Mob,
-    //         gmmcoImage4Mob,
-    //     ],    
-    //     status: "Completed"
-    // },
+    {
+        id: 2,
+        title: "Gmmco",
+        slug: "gmmco",
+        image: gmmcoImage,
+        shortDesc: "A modular React-based frontend built for Gmmco, featuring reusable components, smooth navigation with React Router, and basic Redux-driven state management, styled with Tailwind CSS.",
+        longDesc: ["Gmmco Inc. is a leading industrial solutions provider, and this project involved building a clean, scalable, and high-performance frontend for their corporate website. The entire interface was developed using React with a modular architecture to ensure flexibility, easy maintenance, and component reusability across the platform.",
+        "To enhance the user experience, React Router was implemented for smooth, multi-page navigation, while basic Redux was integrated to handle essential state management across key UI sections. Tailwind CSS was used to create a modern and responsive design system, supported by HTML, CSS, and JavaScript for additional structure and behavior.",
+        "The result is a fast, organized, and visually consistent frontend that aligns with Gmmco’s brand identity and improves overall user interaction."],
+        link: "/projects/gmmco",
+        projLink: ["https://www.gmmco.in/"],
+        gitHub: "",
+        skills: ["React.js", "Redux Toolkit", "Tailwind CSS", "Vite", "HTML", "CSS", "JavaScript"],
+        skillsIcons: [icons.reactIcon, icons.reduxIcon, icons.tailwindIcons, icons.viteIcon, icons.htmlIcons, icons.cssIcons, icons.jsIcon],
+        images: [
+          gmmcoImage1,
+          gmmcoImage2,
+          gmmcoImage3,
+          gmmcoImage4,
+        ],
+        imagesMobile: [
+            gmmcoImage1Mob,
+            gmmcoImage2Mob,
+            gmmcoImage3Mob,
+            gmmcoImage4Mob,
+        ],    
+        status: "Completed"
+    },
     {
         id: 3,
         title: "G20",
@@ -221,26 +221,26 @@ const projectsData = [
         ],        
         status: "Completed"
     },
-    {
-        id: 7,
-        title: "Zuari Farm Hub",
-        slug: "zuarifarmhub",
-        image: zuarifarmhubImage,
-        link: "/projects/zuarifarmhub",
-        shortDesc: "Developed a responsive, user-friendly website for Zuari Farm Hub to help farmers access agricultural solutions, products, and farming tips using HTML, CSS, Bootstrap, JavaScript, and jQuery.",
-        longDesc: ["Zuari Farm Hub is an initiative focused on empowering farmers with accessible and reliable agricultural solutions. For this project, I built a clean and mobile-responsive website using HTML5, CSS3, Bootstrap, JavaScript, and jQuery to ensure smooth navigation and clear presentation of farming resources.","The frontend showcases essential information such as agriculture tips, products, and service offerings from Zuari Farm Hub Limited (ZFHL). The layout was designed to be intuitive for rural and general users, with structured sections that highlight products, benefits, and support services.","Interactive elements and UI behaviors were implemented with jQuery to enhance usability, while Bootstrap ensured a consistent design across devices. The final result is an easy-to-use platform that helps farmers discover valuable tools and knowledge to improve their farming practices."],
-        projLink: ["https://zuarifarmhub.com/"],
-        gitHub: "",
-        skills: ["HTML5", "CSS3", "Bootstrap", "JavaScript", "jQuery"],
-        skillsIcons: [icons.bootstrapIcons, icons.xmlIcon, icons.jsIcon, icons.htmlIcons, icons.cssIcons],
-        images: [
-          zuariImage1, zuariImage2
-        ],
-        imagesMobile: [
-          zuariImage1Mob, zuariImage2Mob
-        ],        
-        status: "Completed"
-    },
+    // {
+    //     id: 7,
+    //     title: "Zuari Farm Hub",
+    //     slug: "zuarifarmhub",
+    //     image: zuarifarmhubImage,
+    //     link: "/projects/zuarifarmhub",
+    //     shortDesc: "Developed a responsive, user-friendly website for Zuari Farm Hub to help farmers access agricultural solutions, products, and farming tips using HTML, CSS, Bootstrap, JavaScript, and jQuery.",
+    //     longDesc: ["Zuari Farm Hub is an initiative focused on empowering farmers with accessible and reliable agricultural solutions. For this project, I built a clean and mobile-responsive website using HTML5, CSS3, Bootstrap, JavaScript, and jQuery to ensure smooth navigation and clear presentation of farming resources.","The frontend showcases essential information such as agriculture tips, products, and service offerings from Zuari Farm Hub Limited (ZFHL). The layout was designed to be intuitive for rural and general users, with structured sections that highlight products, benefits, and support services.","Interactive elements and UI behaviors were implemented with jQuery to enhance usability, while Bootstrap ensured a consistent design across devices. The final result is an easy-to-use platform that helps farmers discover valuable tools and knowledge to improve their farming practices."],
+    //     projLink: ["https://zuarifarmhub.com/"],
+    //     gitHub: "",
+    //     skills: ["HTML5", "CSS3", "Bootstrap", "JavaScript", "jQuery"],
+    //     skillsIcons: [icons.bootstrapIcons, icons.xmlIcon, icons.jsIcon, icons.htmlIcons, icons.cssIcons],
+    //     images: [
+    //       zuariImage1, zuariImage2
+    //     ],
+    //     imagesMobile: [
+    //       zuariImage1Mob, zuariImage2Mob
+    //     ],        
+    //     status: "Completed"
+    // },
 ];
 
 export default projectsData;
