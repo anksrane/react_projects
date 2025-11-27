@@ -52,10 +52,10 @@ function Hero() {
               </a>            
               <a href="mailto:ankitrane900@gmail.com" className='social-links' target="_blank" rel="noopener noreferrer">
                 <MdEmail className='social-icons'/> Gmail
-              </a>   
+              </a>            
               <a href="tel:8082466900" className='social-links' target="_blank" rel="noopener noreferrer">
                 <IoCall className='social-icons'/> Call
-              </a>                        
+              </a>            
             </div>
           </div>
           <div className="line-container">
